@@ -91,9 +91,8 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  overflow-x: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .table::-webkit-scrollbar {
@@ -102,7 +101,7 @@
 
 .tableRow {
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
 .tableRow:hover {
@@ -315,6 +314,24 @@
   background-color: #2a2c35;
 }
 
+.checkedRow {
+  background-color: #1a1c21;
+  opacity: 0.8;
+}
+
+.checkedRow:hover {
+  background-color: #242631;
+}
+
+.checkedRow.expandedRow {
+  background-color: #242631;
+  opacity: 1;
+}
+
+.checkedRow td {
+  border-top: 1px solid #2a2c35;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -359,6 +376,14 @@
   .title {
     font-size: 1.5rem;
     margin-bottom: 1rem;
+  }
+
+  .urlCell,
+  .descriptionCell,
+  .addressCell {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
   }
 
   .badge {
