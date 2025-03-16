@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
@@ -7,6 +7,22 @@ import styles from "../styles/Inspect.module.css";
 export default function Inspect() {
   const router = useRouter();
   const [inspecting, setInspecting] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+
+  useEffect(() => {
+    // 페이지가 마운트된 후 약간의 지연을 주어 렌더링이 완료된 후 스캔 시작
+    const timer = setTimeout(() => {
+      setPageLoaded(true);
+      const scannerElement = document.querySelector(
+        '[data-testid="qr-scanner-button"]'
+      );
+      if (scannerElement) {
+        scannerElement.click();
+      }
+    }, 500); // 500ms 지연
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleScanSuccess = async (decodedText) => {
     setInspecting(true);
@@ -31,7 +47,7 @@ export default function Inspect() {
 
       if (result.success) {
         alert("점검이 완료되었습니다.");
-        router.replace("/dashboard");
+        router.replace("/");
       } else {
         throw new Error(result.message || "점검 실패");
       }

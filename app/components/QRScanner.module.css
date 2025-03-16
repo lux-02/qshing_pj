@@ -38,3 +38,39 @@
 .buttonStop:hover {
   background-color: #c53030;
 }
+
+.scanButton {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #004ea7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.scanButton:hover {
+  background-color: #0051cc;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.scanButton:disabled {
+  background-color: #4a4d57;
+  cursor: not-allowed;
+}
+
+/* 스캔 중일 때의 스타일 */
+.scanButton[data-scanning="true"] {
+  background-color: #dc3545;
+}
+
+.scanButton[data-scanning="true"]:hover {
+  background-color: #c82333;
+}

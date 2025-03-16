@@ -48,14 +48,15 @@ const QRScanner = ({ onScanSuccess }) => {
     }
   };
 
+  const toggleScanner = isScanning ? stopScanning : startScanning;
+
   return (
     <div className={styles.container}>
       <div id="reader" className={styles.reader} />
       <button
-        className={`${styles.button} ${
-          isScanning ? styles.buttonStop : styles.buttonStart
-        }`}
-        onClick={isScanning ? stopScanning : startScanning}
+        onClick={toggleScanner}
+        className={styles.scanButton}
+        data-testid="qr-scanner-button"
       >
         {isScanning ? "SCAN STOP" : "QR SCAN"}
       </button>
