@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
 import styles from "../styles/Register.module.css";
 
 export default function Register() {
+  const router = useRouter();
+  const [showScanner, setShowScanner] = useState(false);
   const [formData, setFormData] = useState({
     originalUrl: "",
     description: "",
     address: "",
-    latitude: "",
-    longitude: "",
   });
 
   const handleScanSuccess = (decodedText) => {
@@ -16,44 +18,42 @@ export default function Register() {
       ...prev,
       originalUrl: decodedText,
     }));
-    alert(`QR 코드 스캔 성공: ${decodedText}`);
+    setShowScanner(false);
+    alert("QR 코드 스캔 완료");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 폼 데이터 검증
+    if (!formData.originalUrl || !formData.description || !formData.address) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
     try {
+      console.log("Sending data:", formData); // 디버깅용 로그
+
       const response = await fetch("/api/qr/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          location: {
-            type: "Point",
-            coordinates: [
-              parseFloat(formData.longitude),
-              parseFloat(formData.latitude),
-            ],
-            address: formData.address,
-          },
+          originalUrl: formData.originalUrl.trim(),
+          description: formData.description.trim(),
+          address: formData.address.trim(),
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("등록 실패");
+        throw new Error(data.message || "등록 실패");
       }
 
-      alert("QR 코드 등록 성공");
-
-      setFormData({
-        originalUrl: "",
-        description: "",
-        address: "",
-        latitude: "",
-        longitude: "",
-      });
+      alert("QR 코드가 성공적으로 등록되었습니다.");
+      router.push("/");
     } catch (error) {
       alert("등록 실패: " + error.message);
     }
@@ -70,81 +70,87 @@ export default function Register() {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1 className={styles.title}>QR 코드 등록</h1>
+        <h1 className={styles.title}>Registration</h1>
 
-        <div className={styles.scannerContainer}>
-          <QRScanner onScanSuccess={handleScanSuccess} />
-        </div>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>URL</label>
-            <input
-              className={styles.input}
-              name="originalUrl"
-              value={formData.originalUrl}
-              onChange={handleChange}
-              placeholder="QR 코드 URL"
-              required
-            />
+        {showScanner ? (
+          <div className={styles.scannerContainer}>
+            <QRScanner onScanSuccess={handleScanSuccess} />
+            <button
+              onClick={() => setShowScanner(false)}
+              className={styles.cancelButton}
+            >
+              스캔 취소
+            </button>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="originalUrl" className={styles.label}>
+                URL
+              </label>
+              <div className={styles.urlInputGroup}>
+                <input
+                  type="url"
+                  id="originalUrl"
+                  name="originalUrl"
+                  value={formData.originalUrl}
+                  onChange={handleChange}
+                  required
+                  className={styles.input}
+                  placeholder="https://example.com"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowScanner(true)}
+                  className={styles.scanButton}
+                >
+                  QR 스캔
+                </button>
+              </div>
+            </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>설명</label>
-            <textarea
-              className={styles.textarea}
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="QR 코드 설명"
-              required
-            />
-          </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="description" className={styles.label}>
+                설명
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                className={styles.textarea}
+                placeholder="QR 코드에 대한 설명을 입력하세요"
+              />
+            </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>주소</label>
-            <input
-              className={styles.input}
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="QR 코드 설치 주소"
-              required
-            />
-          </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="address" className={styles.label}>
+                설치 위치
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+                className={styles.input}
+                placeholder="QR 코드가 설치된 위치"
+              />
+            </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>위도</label>
-            <input
-              className={styles.input}
-              name="latitude"
-              type="number"
-              step="any"
-              value={formData.latitude}
-              onChange={handleChange}
-              placeholder="위도"
-              required
-            />
-          </div>
+            <div className={styles.buttonGroup}>
+              <button type="submit" className={styles.submitButton}>
+                등록
+              </button>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>경도</label>
-            <input
-              className={styles.input}
-              name="longitude"
-              type="number"
-              step="any"
-              value={formData.longitude}
-              onChange={handleChange}
-              placeholder="경도"
-              required
-            />
-          </div>
-
-          <button type="submit" className={styles.submitButton}>
-            등록
-          </button>
-        </form>
+              <Link href="/" className={styles.homeButton}>
+                메인 페이지
+              </Link>
+            </div>
+          </form>
+        )}
       </main>
     </div>
   );

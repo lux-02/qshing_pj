@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
 import styles from "../styles/Inspect.module.css";
 
@@ -43,7 +44,6 @@ export default function Inspect() {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1 className={styles.title}>QR 코드 점검</h1>
         <div className={styles.scannerContainer}>
           <QRScanner onScanSuccess={handleScanSuccess} />
         </div>
@@ -53,6 +53,12 @@ export default function Inspect() {
             <p>점검 중입니다...</p>
           </div>
         )}
+
+        <div className={styles.buttonContainer}>
+          <Link href="/" className={styles.homeButton}>
+            메인 페이지
+          </Link>
+        </div>
       </main>
     </div>
   );

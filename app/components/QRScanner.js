@@ -57,7 +57,7 @@ const QRScanner = ({ onScanSuccess }) => {
         }`}
         onClick={isScanning ? stopScanning : startScanning}
       >
-        {isScanning ? "QR 스캔 중지" : "QR 스캔 시작"}
+        {isScanning ? "SCAN STOP" : "QR SCAN"}
       </button>
     </div>
   );
