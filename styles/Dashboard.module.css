@@ -5,10 +5,14 @@
 }
 
 .main {
+  min-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
-  background-color: transparent;
+  position: relative;
 }
 
 .title {
@@ -111,7 +115,7 @@
 .table th,
 .table td {
   padding: 1rem 1.5rem;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #3a3d4c;
   color: #ffffff;
   font-size: 0.875rem;
@@ -346,6 +350,7 @@
     flex-direction: column;
     padding: 2rem;
     gap: 0.75rem;
+    width: 80%;
   }
 
   .searchInput,
@@ -391,4 +396,54 @@
     font-size: 0.75rem;
     min-width: 40px;
   }
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.deleteButton {
+  padding: 0.5rem 1rem;
+  background-color: #1a1c21;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 60px;
+  min-width: 60px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.deleteButton:hover {
+  background-color: #dc3545;
+  color: white;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* 테이블이 비어있을 때의 스타일 */
+.tableWrapper:empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  background-color: #1a1c21;
+  border-radius: 8px;
+}
+
+.tableWrapper:empty::after {
+  content: "데이터가 없습니다.";
+  color: #a0a0a0;
+  font-size: 0.875rem;
 }

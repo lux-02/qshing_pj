@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
@@ -12,6 +12,29 @@ export default function Register() {
     description: "",
     address: "",
   });
+  const [pageLoaded, setPageLoaded] = useState(false);
+
+  // QR 스캐너 자동 시작을 위한 useEffect
+  useEffect(() => {
+    if (showScanner && pageLoaded) {
+      const timer = setTimeout(() => {
+        const scannerElement = document.querySelector(
+          '[data-testid="qr-scanner-button"]'
+        );
+        if (scannerElement) {
+          scannerElement.click();
+        }
+      }, 500); // 500ms 지연
+
+      return () => clearTimeout(timer);
+    }
+  }, [showScanner, pageLoaded]);
+
+  // 페이지 로드 상태 관리
+  useEffect(() => {
+    setPageLoaded(true);
+    return () => setPageLoaded(false);
+  }, []);
 
   const handleScanSuccess = (decodedText) => {
     setFormData((prev) => ({
@@ -39,17 +62,11 @@ export default function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          originalUrl: formData.originalUrl.trim(),
-          description: formData.description.trim(),
-          address: formData.address.trim(),
-        }),
+        body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "등록 실패");
+        throw new Error("등록 실패");
       }
 
       alert("QR 코드가 성공적으로 등록되었습니다.");
