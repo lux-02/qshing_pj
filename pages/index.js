@@ -166,13 +166,13 @@ export default function Home() {
             <table className={styles.table}>
               <thead>
                 <tr className={styles.tableRow}>
-                  <th>URL</th>
+                  <th>상태</th>
                   <th>설명</th>
-                  <th>설치 위치</th>
+                  <th>위치</th>
+                  <th>URL</th>
                   <th>스캔된 URL</th>
                   <th>마지막 점검</th>
                   <th>경과</th>
-                  <th>상태</th>
                   <th>작업</th>
                 </tr>
               </thead>
@@ -189,24 +189,6 @@ export default function Home() {
                         expandedId === qr._id ? styles.expandedRow : ""
                       } ${qr.lastScannedAt ? styles.checkedRow : ""}`}
                     >
-                      <td className={`${styles.urlCell} ${styles.truncated}`}>
-                        {qr.originalUrl}
-                      </td>
-                      <td
-                        className={`${styles.descriptionCell} ${styles.truncated}`}
-                      >
-                        {qr.description}
-                      </td>
-                      <td
-                        className={`${styles.addressCell} ${styles.truncated}`}
-                      >
-                        {qr.address}
-                      </td>
-                      <td className={`${styles.urlCell} ${styles.truncated}`}>
-                        {qr.lastScannedUrl || "-"}
-                      </td>
-                      <td>{formatDate(qr.lastScannedAt)}</td>
-                      <td>{daysElapsed ? `D+${daysElapsed}` : "-"}</td>
                       <td>
                         <span
                           className={`${styles.badge} ${
@@ -224,6 +206,26 @@ export default function Home() {
                             : "안전"}
                         </span>
                       </td>
+
+                      <td
+                        className={`${styles.descriptionCell} ${styles.truncated}`}
+                      >
+                        {qr.description}
+                      </td>
+                      <td
+                        className={`${styles.addressCell} ${styles.truncated}`}
+                      >
+                        {qr.address}
+                      </td>
+                      <td className={`${styles.urlCell} ${styles.truncated}`}>
+                        {qr.originalUrl}
+                      </td>
+                      <td className={`${styles.urlCell} ${styles.truncated}`}>
+                        {qr.lastScannedUrl || "-"}
+                      </td>
+                      <td>{formatDate(qr.lastScannedAt)}</td>
+                      <td>{daysElapsed ? `D+${daysElapsed}` : "-"}</td>
+
                       <td>
                         <div className={styles.actionButtons}>
                           <button
