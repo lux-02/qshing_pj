@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
@@ -11,8 +11,8 @@ export default function Inspect() {
   const { qrId } = router.query;
   const [inspecting, setInspecting] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
-  const [isCompromised, setIsCompromised] = useState(false);
-  const scannerRef = useRef(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleScanSuccess = async (decodedText) => {
     if (!qrId) {
@@ -22,7 +22,7 @@ export default function Inspect() {
     setInspecting(true);
 
     try {
-      const response = await fetch(`/api/qr/inspect?id=${qrId}`, {
+      const response = await fetch(`/api/qr/oracle/inspect?id=${qrId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,22 +39,26 @@ export default function Inspect() {
       const result = await response.json();
 
       if (result.success) {
-        // 결과 모달 표시
-        setIsCompromised(result.isCompromised);
+        setIsSuccess(true);
+        setMessage("QR 코드 점검이 완료되었습니다.");
         setShowResultModal(true);
-        setInspecting(false); // 로딩 상태 해제
       } else {
         throw new Error(result.message || "점검 실패");
       }
     } catch (error) {
-      alert("점검 실패: " + error.message);
+      setIsSuccess(false);
+      setMessage("점검 실패: " + error.message);
+      setShowResultModal(true);
+    } finally {
       setInspecting(false);
     }
   };
 
   const handleResultModalClose = () => {
     setShowResultModal(false);
-    router.replace("/");
+    if (isSuccess) {
+      router.replace("/");
+    }
   };
 
   if (inspecting) {
@@ -65,7 +69,7 @@ export default function Inspect() {
     <div className={styles.container}>
       <main className={styles.main}>
         <div className={styles.scannerContainer}>
-          <QRScanner onScanSuccess={handleScanSuccess} ref={scannerRef} />
+          <QRScanner onScanSuccess={handleScanSuccess} />
         </div>
 
         <div className={styles.buttonContainer}>
@@ -76,8 +80,10 @@ export default function Inspect() {
 
         {showResultModal && (
           <ResultModal
-            isCompromised={isCompromised}
+            isCompromised={!isSuccess}
             onClose={handleResultModalClose}
+            type={isSuccess ? "inspect" : "error"}
+            message={message}
           />
         )}
       </main>
