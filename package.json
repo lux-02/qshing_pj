@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure/app-configuration": "^1.8.0",
+    "@azure/identity": "^4.8.0",
+    "@azure/keyvault-secrets": "^4.9.0",
     "@chakra-ui/react": "^3.13.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -18,8 +21,11 @@
     "axios": "^1.8.3",
     "framer-motion": "^12.5.0",
     "html5-qrcode": "^2.3.8",
-    "mongoose": "^8.12.1",
     "next": "15.2.2",
+    "oci-common": "^2.106.0",
+    "oci-objectstorage": "^2.106.0",
+    "oci-secrets": "^2.106.0",
+    "oracledb": "^6.8.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

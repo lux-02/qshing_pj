@@ -4,35 +4,45 @@ import Link from "next/link";
 import styles from "../styles/Dashboard.module.css";
 import DeleteModal from "../app/components/DeleteModal";
 import LoadingSpinner from "../app/components/LoadingSpinner";
+import { useApp } from "@/app/context/AppContext";
 
 export default function Home() {
   const router = useRouter();
-  const [qrCodes, setQrCodes] = useState([]);
+  const { qrCodes, setQrCodes, loading, setLoading, error, setError } =
+    useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchQRCodes = async () => {
+    const fetchQrCodes = async () => {
       try {
         setLoading(true);
+        setError(null);
+        console.log("QR 코드 목록 로딩 시작...");
+
         const response = await fetch("/api/qr/list");
         if (!response.ok) {
           throw new Error("데이터를 불러오는데 실패했습니다.");
         }
+
         const data = await response.json();
+        console.log("QR 코드 목록 로딩 완료:", data.length, "개");
+
         setQrCodes(data);
-      } catch (error) {
-        console.error("Error fetching QR codes:", error);
-        alert("데이터를 불러오는데 실패했습니다.");
+        setLastUpdated(new Date());
+      } catch (err) {
+        console.error("QR 코드 목록 로딩 실패:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchQRCodes();
+    fetchQrCodes();
   }, []);
 
   const handleInspect = (qrId) => {
@@ -47,12 +57,12 @@ export default function Home() {
   const sortQRCodes = (qrCodes) => {
     return [...qrCodes].sort((a, b) => {
       // 미점검 상태를 최상위로
-      if (!a.lastScannedAt && b.lastScannedAt) return -1;
-      if (a.lastScannedAt && !b.lastScannedAt) return 1;
+      if (!a.LAST_SCANNED_AT && b.LAST_SCANNED_AT) return -1;
+      if (a.LAST_SCANNED_AT && !b.LAST_SCANNED_AT) return 1;
 
       // 둘 다 점검된 경우, 최근 점검일 기준으로 정렬
-      if (a.lastScannedAt && b.lastScannedAt) {
-        return new Date(b.lastScannedAt) - new Date(a.lastScannedAt);
+      if (a.LAST_SCANNED_AT && b.LAST_SCANNED_AT) {
+        return new Date(b.LAST_SCANNED_AT) - new Date(a.LAST_SCANNED_AT);
       }
 
       return 0;
@@ -67,9 +77,9 @@ export default function Home() {
         if (searchTerm) {
           const searchLower = searchTerm.toLowerCase();
           return (
-            (qr.description?.toLowerCase() || "").includes(searchLower) ||
-            (qr.address?.toLowerCase() || "").includes(searchLower) ||
-            (qr.originalUrl?.toLowerCase() || "").includes(searchLower)
+            (qr.DESCRIPTION?.toLowerCase() || "").includes(searchLower) ||
+            (qr.ADDRESS?.toLowerCase() || "").includes(searchLower) ||
+            (qr.ORIGINAL_URL?.toLowerCase() || "").includes(searchLower)
           );
         }
         return true;
@@ -78,11 +88,11 @@ export default function Home() {
         // 상태 필터링
         switch (filter) {
           case "compromised":
-            return qr.isCompromised;
+            return qr.IS_COMPROMISED === 1;
           case "safe":
-            return qr.lastScannedAt && !qr.isCompromised;
+            return qr.LAST_SCANNED_AT && qr.IS_COMPROMISED !== 1;
           case "unchecked":
-            return !qr.lastScannedAt;
+            return !qr.LAST_SCANNED_AT;
           default:
             return true;
         }
@@ -111,9 +121,9 @@ export default function Home() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (qr) => {
     try {
-      const response = await fetch(`/api/qr/delete?id=${id}`, {
+      const response = await fetch(`/api/qr/delete?id=${qr.ID}`, {
         method: "DELETE",
       });
 
@@ -122,7 +132,7 @@ export default function Home() {
       }
 
       // 성공적으로 삭제된 경우 목록에서 제거
-      setQrCodes((prevCodes) => prevCodes.filter((qr) => qr._id !== id));
+      setQrCodes((prevCodes) => prevCodes.filter((q) => q.ID !== qr.ID));
       alert("QR 코드가 삭제되었습니다.");
     } catch (error) {
       alert("삭제 실패: " + error.message);
@@ -133,8 +143,8 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>QShing Inspect Dashboard</h1>
+      <div className={styles.main}>
+        <h1 className={styles.title}>Qshing Project</h1>
 
         <div className={styles.controls}>
           <input
@@ -155,12 +165,21 @@ export default function Home() {
             <option value="unchecked">미점검</option>
           </select>
           <Link href="/register" className={styles.registerButton}>
-            데이터 등록
+            QR 코드 등록
           </Link>
         </div>
 
         {loading ? (
           <LoadingSpinner />
+        ) : error ? (
+          <div className={styles.errorContainer}>
+            <h3 className={styles.errorTitle}>오류 발생</h3>
+            <p className={styles.errorMessage}>{error}</p>
+          </div>
+        ) : qrCodes.length === 0 ? (
+          <div className={styles.emptyContainer}>
+            <p className={styles.emptyMessage}>등록된 QR 코드가 없습니다.</p>
+          </div>
         ) : (
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
@@ -178,72 +197,94 @@ export default function Home() {
               </thead>
               <tbody>
                 {filteredQRCodes.map((qr) => {
-                  const daysElapsed = calculateDaysElapsed(qr.lastScannedAt);
-                  const needsInspection = !qr.lastScannedAt || qr.isCompromised;
+                  const daysElapsed = calculateDaysElapsed(qr.LAST_SCANNED_AT);
+                  const isExpanded = expandedId === qr.ID;
+                  const rowClass = `${styles.tableRow} ${
+                    isExpanded ? styles.expandedRow : ""
+                  } ${qr.LAST_SCANNED_AT ? styles.checkedRow : ""}`;
 
                   return (
                     <tr
-                      key={qr._id}
-                      onClick={() => toggleRowExpand(qr._id)}
-                      className={`${styles.tableRow} ${
-                        expandedId === qr._id ? styles.expandedRow : ""
-                      } ${qr.lastScannedAt ? styles.checkedRow : ""}`}
+                      key={qr.ID}
+                      className={rowClass}
+                      onClick={() => toggleRowExpand(qr.ID)}
                     >
                       <td>
                         <span
                           className={`${styles.badge} ${
-                            !qr.lastScannedAt
-                              ? styles.unchecked
-                              : qr.isCompromised
+                            qr.IS_COMPROMISED === 1
                               ? styles.compromised
-                              : styles.safe
+                              : qr.LAST_SCANNED_AT
+                              ? styles.safe
+                              : styles.unchecked
                           }`}
                         >
-                          {!qr.lastScannedAt
-                            ? "미점검"
-                            : qr.isCompromised
-                            ? "변조됨"
-                            : "안전"}
+                          {qr.IS_COMPROMISED === 1
+                            ? "변조"
+                            : qr.LAST_SCANNED_AT
+                            ? "안전"
+                            : "미점검"}
                         </span>
                       </td>
-
                       <td
-                        className={`${styles.descriptionCell} ${styles.truncated}`}
+                        className={`${styles.cellCommon} ${
+                          styles.descriptionCell
+                        } ${isExpanded ? styles.expanded : styles.truncated}`}
                       >
-                        {qr.description}
+                        {qr.DESCRIPTION}
                       </td>
                       <td
-                        className={`${styles.addressCell} ${styles.truncated}`}
+                        className={`${styles.cellCommon} ${
+                          styles.addressCell
+                        } ${isExpanded ? styles.expanded : styles.truncated}`}
                       >
-                        {qr.address}
+                        {qr.ADDRESS}
                       </td>
-                      <td className={`${styles.urlCell} ${styles.truncated}`}>
-                        {qr.originalUrl}
+                      <td
+                        className={`${styles.cellCommon} ${styles.urlCell} ${
+                          isExpanded ? styles.expanded : styles.truncated
+                        }`}
+                      >
+                        {qr.ORIGINAL_URL}
                       </td>
-                      <td className={`${styles.urlCell} ${styles.truncated}`}>
-                        {qr.lastScannedUrl || "-"}
+                      <td
+                        className={`${styles.cellCommon} ${styles.urlCell} ${
+                          isExpanded ? styles.expanded : styles.truncated
+                        }`}
+                      >
+                        {qr.LAST_SCANNED_URL || "-"}
                       </td>
-                      <td>{formatDate(qr.lastScannedAt)}</td>
-                      <td>{daysElapsed ? `D+${daysElapsed}` : "-"}</td>
-
-                      <td>
+                      <td
+                        className={`${styles.cellCommon} ${
+                          isExpanded ? styles.expanded : styles.truncated
+                        }`}
+                      >
+                        {formatDate(qr.LAST_SCANNED_AT)}
+                      </td>
+                      <td
+                        className={`${styles.cellCommon} ${
+                          isExpanded ? styles.expanded : styles.truncated
+                        }`}
+                      >
+                        {daysElapsed ? `${daysElapsed}일` : "-"}
+                      </td>
+                      <td className={styles.cellCommon}>
                         <div className={styles.actionButtons}>
                           <button
+                            className={styles.inspectButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleInspect(qr._id);
+                              handleInspect(qr.ID);
                             }}
-                            className={styles.inspectButton}
-                            disabled={!needsInspection}
                           >
-                            {qr.isCompromised ? "재점검" : "점검"}
+                            점검
                           </button>
                           <button
+                            className={styles.deleteButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDeleteTarget(qr._id);
+                              setDeleteTarget(qr);
                             }}
-                            className={styles.deleteButton}
                           >
                             삭제
                           </button>
@@ -256,12 +297,13 @@ export default function Home() {
             </table>
           </div>
         )}
-      </main>
+      </div>
 
       {deleteTarget && (
         <DeleteModal
-          onConfirm={() => handleDelete(deleteTarget)}
-          onCancel={() => setDeleteTarget(null)}
+          qrCode={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onDelete={handleDelete}
         />
       )}
     </div>

@@ -248,41 +248,33 @@
 
 /* 공통 셀 스타일 */
 .cellCommon {
-  width: 200px;
-  min-width: 200px;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 200px;
-  cursor: pointer;
-  padding: 1rem 1.5rem;
-  position: relative;
 }
 
 /* 설명 셀은 더 넓게 설정 */
 .descriptionCell {
-  composes: cellCommon;
-  width: 250px;
-  min-width: 250px;
   max-width: 250px;
 }
 
 /* URL 셀 */
 .urlCell {
-  composes: cellCommon;
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
+  max-width: 300px;
 }
 
 /* 주소 셀 */
 .addressCell {
-  composes: cellCommon;
-  width: 150px;
-  min-width: 150px;
-  max-width: 150px;
+  max-width: 200px;
 }
 
 /* 기본 상태 (접힌 상태) */
 .truncated {
-  height: 24px; /* 한 줄 높이 */
+  height: 24px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -294,6 +286,8 @@
   white-space: normal;
   word-break: break-all;
   overflow: visible;
+  padding: 1.5rem;
+  background-color: #242631;
 }
 
 /* 호버 효과 */
@@ -301,20 +295,16 @@
   background-color: #3a3d4c;
 }
 
-.expandedRow td.truncated {
-  height: auto;
-  white-space: normal;
-  word-break: break-all;
-  overflow: visible;
-  padding: 1.5rem;
-}
-
-.expandedRow {
+.expandedRow td {
   background-color: #242631;
   transition: background-color 0.3s ease;
 }
 
-.expandedRow:hover {
+.expandedRow:hover td {
+  background-color: #2a2c35;
+}
+
+.expandedRow td.expanded {
   background-color: #2a2c35;
 }
 
@@ -334,6 +324,10 @@
 
 .checkedRow td {
   border-top: 1px solid #2a2c35;
+}
+
+.checkedRow td.expanded {
+  background-color: #2a2c35;
 }
 
 @media (max-width: 768px) {
@@ -400,9 +394,9 @@
 
 .actionButtons {
   display: flex;
-  gap: 0.5rem;
-  justify-content: flex-start;
-  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  min-width: 120px;
 }
 
 .deleteButton {
@@ -446,4 +440,169 @@
   content: "데이터가 없습니다.";
   color: #a0a0a0;
   font-size: 0.875rem;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 200px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0070f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.loadingSubText {
+  color: #8e8e8e;
+  font-size: 0.875rem;
+}
+
+.errorContainer {
+  background-color: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.errorTitle {
+  color: #ff4444;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.errorMessage {
+  color: #ffffff;
+  font-size: 0.875rem;
+}
+
+.emptyContainer {
+  text-align: center;
+  padding: 2rem;
+  background-color: #2a2c35;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.emptyMessage {
+  color: #8e8e8e;
+  font-size: 1rem;
+}
+
+/* 모달 스타일 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #2a2c35;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modalTitle {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.modalMessage {
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.modalDetails {
+  background-color: #1a1c21;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.modalDetails p {
+  color: #ffffff;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.modalDetails strong {
+  color: #8e8e8e;
+  margin-right: 0.5rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.modalCancelButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #3a3d4c;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.modalCancelButton:hover {
+  background-color: #4a4d57;
+}
+
+.modalDeleteButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.modalDeleteButton:hover {
+  background-color: #c82333;
 }
