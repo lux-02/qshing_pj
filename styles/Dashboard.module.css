@@ -449,6 +449,8 @@
   justify-content: center;
   padding: 2rem;
   min-height: 200px;
+  background: none;
+  background-color: #1a1c21;
 }
 
 .spinner {
@@ -477,7 +479,7 @@
 }
 
 .loadingSubText {
-  color: #8e8e8e;
+  color: #fff;
   font-size: 0.875rem;
 }
 
@@ -605,4 +607,36 @@
 
 .modalDeleteButton:hover {
   background-color: #c82333;
+}
+
+.resultMessage {
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.warningText {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.successText {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.modalConfirmButton {
+  padding: 0.8rem 1.5rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.modalConfirmButton:hover {
+  background-color: #357abd;
 }

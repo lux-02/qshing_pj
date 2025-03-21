@@ -5,6 +5,7 @@ import styles from "../styles/Dashboard.module.css";
 import DeleteModal from "../app/components/DeleteModal";
 import LoadingSpinner from "../app/components/LoadingSpinner";
 import { useApp } from "@/app/context/AppContext";
+import ResultModal from "../app/components/ResultModal";
 
 export default function Home() {
   const router = useRouter();
@@ -16,6 +17,11 @@ export default function Home() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [selectedQrCode, setSelectedQrCode] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchQrCodes = async () => {
@@ -121,9 +127,10 @@ export default function Home() {
     });
   };
 
-  const handleDelete = async (qr) => {
+  const handleDelete = async (qrCode) => {
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/qr/delete?id=${qr.ID}`, {
+      const response = await fetch(`/api/qr/delete?id=${qrCode.ID}`, {
         method: "DELETE",
       });
 
@@ -131,15 +138,42 @@ export default function Home() {
         throw new Error("삭제 실패");
       }
 
-      // 성공적으로 삭제된 경우 목록에서 제거
-      setQrCodes((prevCodes) => prevCodes.filter((q) => q.ID !== qr.ID));
-      alert("QR 코드가 삭제되었습니다.");
+      // 삭제 성공 시 결과 모달 표시
+      setIsSuccess(true);
+      setMessage("QR 코드가 성공적으로 삭제되었습니다.");
+      setShowResultModal(true);
+      setShowModal(false);
+
+      // QR 코드 목록에서 삭제된 항목 제거
+      setQrCodes((prev) => prev.filter((item) => item.ID !== qrCode.ID));
     } catch (error) {
-      alert("삭제 실패: " + error.message);
+      setIsSuccess(false);
+      setMessage("삭제 실패: " + error.message);
+      setShowResultModal(true);
+      setShowModal(false);
     } finally {
-      setDeleteTarget(null);
+      setIsDeleting(false);
     }
   };
+
+  const handleResultModalClose = () => {
+    setShowResultModal(false);
+    if (isSuccess) {
+      router.reload(); // 성공 시 대시보드 새로고침
+    }
+  };
+
+  if (loading || isDeleting) {
+    return (
+      <LoadingSpinner
+        message={
+          isDeleting
+            ? "QR 코드를 삭제하는 중입니다..."
+            : "QR 코드 목록을 불러오는 중입니다..."
+        }
+      />
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -169,18 +203,20 @@ export default function Home() {
           </Link>
         </div>
 
-        {loading ? (
-          <LoadingSpinner />
-        ) : error ? (
+        {error && (
           <div className={styles.errorContainer}>
             <h3 className={styles.errorTitle}>오류 발생</h3>
             <p className={styles.errorMessage}>{error}</p>
           </div>
-        ) : qrCodes.length === 0 ? (
+        )}
+
+        {!loading && !error && filteredQRCodes.length === 0 && (
           <div className={styles.emptyContainer}>
             <p className={styles.emptyMessage}>등록된 QR 코드가 없습니다.</p>
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && filteredQRCodes.length > 0 && (
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -283,7 +319,8 @@ export default function Home() {
                             className={styles.deleteButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDeleteTarget(qr);
+                              setSelectedQrCode(qr);
+                              setShowModal(true);
                             }}
                           >
                             삭제
@@ -299,11 +336,24 @@ export default function Home() {
         )}
       </div>
 
-      {deleteTarget && (
+      {showModal && (
         <DeleteModal
-          qrCode={deleteTarget}
-          onClose={() => setDeleteTarget(null)}
+          qrCode={selectedQrCode}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedQrCode(null);
+          }}
           onDelete={handleDelete}
+          isDeleting={isDeleting}
+        />
+      )}
+
+      {showResultModal && (
+        <ResultModal
+          isCompromised={!isSuccess}
+          onClose={handleResultModalClose}
+          type={isSuccess ? "delete" : "error"}
+          message={message}
         />
       )}
     </div>

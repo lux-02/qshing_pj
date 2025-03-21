@@ -1,67 +1,81 @@
-import { getConnection } from "../../../app/lib/oracle";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import QRScanner from "../app/components/QRScanner";
+import styles from "../styles/Inspect.module.css";
 
-function normalizeUrl(urlString) {
-  // 기존 normalizeUrl 함수와 동일
-}
+export default function Inspect() {
+  const router = useRouter();
+  const [inspecting, setInspecting] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "허용되지 않는 요청 방법입니다." });
-  }
+  useEffect(() => {
+    // 페이지가 마운트된 후 약간의 지연을 주어 렌더링이 완료된 후 스캔 시작
+    const timer = setTimeout(() => {
+      setPageLoaded(true);
+      const scannerElement = document.querySelector(
+        '[data-testid="qr-scanner-button"]'
+      );
+      if (scannerElement) {
+        scannerElement.click();
+      }
+    }, 500); // 500ms 지연
 
-  try {
-    const { qrId, scannedUrl } = req.body;
-    const connection = await getConnection();
+    return () => clearTimeout(timer);
+  }, []);
 
-    // QR 코드 정보 조회
-    const result = await connection.execute(
-      "SELECT * FROM qr_codes WHERE id = :1",
-      [qrId]
-    );
+  const handleScanSuccess = async (decodedText) => {
+    setInspecting(true);
 
-    if (result.rows.length === 0) {
-      await connection.close();
-      return res.status(404).json({ message: "QR 코드를 찾을 수 없습니다." });
+    try {
+      const response = await fetch("/api/qr/inspect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          qrId: router.query.qrId,
+          scannedUrl: decodedText,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("점검 실패");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert("점검이 완료되었습니다.");
+        router.replace("/");
+      } else {
+        throw new Error(result.message || "점검 실패");
+      }
+    } catch (error) {
+      alert("점검 실패: " + error.message);
+      setInspecting(false);
     }
+  };
 
-    const qrCode = result.rows[0];
-    const normalizedOriginal = normalizeUrl(qrCode.ORIGINAL_URL);
-    const normalizedScanned = normalizeUrl(scannedUrl);
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <div className={styles.scannerContainer}>
+          <QRScanner onScanSuccess={handleScanSuccess} />
+        </div>
 
-    const isCompromised = normalizedOriginal !== normalizedScanned;
+        {inspecting && (
+          <div className={styles.loadingMessage}>
+            <p>점검 중입니다...</p>
+          </div>
+        )}
 
-    // QR 코드 정보 업데이트
-    await connection.execute(
-      `UPDATE qr_codes 
-       SET last_scanned_at = CURRENT_TIMESTAMP,
-           last_scanned_url = :1,
-           is_compromised = :2,
-           normalized_original_url = :3,
-           normalized_scanned_url = :4
-       WHERE id = :5`,
-      [
-        scannedUrl,
-        isCompromised ? 1 : 0,
-        normalizedOriginal,
-        normalizedScanned,
-        qrId,
-      ],
-      { autoCommit: true }
-    );
-
-    await connection.close();
-
-    res.status(200).json({
-      success: true,
-      isCompromised,
-      normalizedOriginal,
-      normalizedScanned,
-      message: isCompromised
-        ? "QR 코드가 변조되었습니다."
-        : "QR 코드가 안전합니다.",
-    });
-  } catch (error) {
-    console.error("Oracle inspection error:", error);
-    res.status(500).json({ message: "점검 중 오류가 발생했습니다." });
-  }
+        <div className={styles.buttonContainer}>
+          <Link href="/" className={styles.homeButton}>
+            메인 페이지
+          </Link>
+        </div>
+      </main>
+    </div>
+  );
 }

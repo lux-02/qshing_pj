@@ -1,67 +1,100 @@
-import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
-import styles from "./QRScanner.module.css";
+import { useEffect, useRef, forwardRef } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import styles from "../../styles/QRScanner.module.css";
 
-const QRScanner = ({ onScanSuccess }) => {
-  const [isScanning, setIsScanning] = useState(false);
+const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
   const scannerRef = useRef(null);
+  const readerRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
+    // DOM이 마운트된 후에 스캐너 초기화
+    const initScanner = () => {
+      if (!readerRef.current) {
+        readerRef.current = document.getElementById("reader");
+      }
+
+      if (!readerRef.current) {
+        console.error("QR 스캐너 요소를 찾을 수 없습니다.");
+        return;
+      }
+
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5QrcodeScanner(
+          "reader",
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+          },
+          false
+        );
+
+        scannerRef.current.render(
+          (decodedText) => {
+            onScanSuccess(decodedText);
+            // 스캔 성공 시 자동으로 스캐너 중지
+            if (scannerRef.current) {
+              scannerRef.current.clear();
+            }
+          },
+          (errorMessage) => {
+            // 에러는 무시
+          }
+        );
       }
     };
-  }, []);
 
-  const startScanning = async () => {
-    try {
-      const scanner = new Html5Qrcode("reader");
-      scannerRef.current = scanner;
+    // DOM이 마운트된 후에 스캐너 초기화
+    const timer = setTimeout(initScanner, 100);
 
-      await scanner.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        async (decodedText) => {
-          await stopScanning();
-          onScanSuccess(decodedText);
-        },
-        (error) => {
-          console.log(error);
+    return () => {
+      clearTimeout(timer);
+      if (scannerRef.current) {
+        scannerRef.current.clear();
+      }
+    };
+  }, [onScanSuccess]);
+
+  // ref를 통해 외부에서 스캐너 제어 가능하도록 함
+  if (ref) {
+    ref.current = {
+      stop: () => {
+        if (scannerRef.current) {
+          scannerRef.current.clear();
         }
-      );
-
-      setIsScanning(true);
-    } catch (error) {
-      alert("스캐너 시작 실패: " + error.message);
-    }
-  };
-
-  const stopScanning = async () => {
-    if (scannerRef.current) {
-      await scannerRef.current.stop();
-      scannerRef.current = null;
-      setIsScanning(false);
-    }
-  };
-
-  const toggleScanner = isScanning ? stopScanning : startScanning;
+      },
+    };
+  }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.scannerContainer}>
       <div id="reader" className={styles.reader} />
       <button
-        onClick={toggleScanner}
-        className={styles.scanButton}
         data-testid="qr-scanner-button"
+        className={styles.scanButton}
+        onClick={() => {
+          if (scannerRef.current) {
+            scannerRef.current.render(
+              (decodedText) => {
+                onScanSuccess(decodedText);
+                // 스캔 성공 시 자동으로 스캐너 중지
+                if (scannerRef.current) {
+                  scannerRef.current.clear();
+                }
+              },
+              (errorMessage) => {
+                // 에러는 무시
+              }
+            );
+          }
+        }}
       >
-        {isScanning ? "SCAN STOP" : "QR SCAN"}
+        QR 코드 스캔
       </button>
     </div>
   );
-};
+});
+
+QRScanner.displayName = "QRScanner";
 
 export default QRScanner;

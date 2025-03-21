@@ -1,6 +1,6 @@
 import styles from "../../styles/Dashboard.module.css";
 
-export default function DeleteModal({ qrCode, onClose, onDelete }) {
+export default function DeleteModal({ qrCode, onClose, onDelete, isDeleting }) {
   if (!qrCode) return null;
 
   return (
@@ -20,7 +20,11 @@ export default function DeleteModal({ qrCode, onClose, onDelete }) {
           </p>
         </div>
         <div className={styles.modalButtons}>
-          <button className={styles.modalCancelButton} onClick={onClose}>
+          <button
+            className={styles.modalCancelButton}
+            onClick={onClose}
+            disabled={isDeleting}
+          >
             취소
           </button>
           <button
@@ -29,8 +33,9 @@ export default function DeleteModal({ qrCode, onClose, onDelete }) {
               onDelete(qrCode);
               onClose();
             }}
+            disabled={isDeleting}
           >
-            삭제
+            {isDeleting ? "삭제 중..." : "삭제"}
           </button>
         </div>
       </div>

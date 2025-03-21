@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
+import LoadingSpinner from "../app/components/LoadingSpinner";
+import ResultModal from "../app/components/ResultModal";
 import styles from "../styles/Register.module.css";
 
 export default function Register() {
@@ -13,6 +15,10 @@ export default function Register() {
     address: "",
   });
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
   // QR 스캐너 자동 시작을 위한 useEffect
   useEffect(() => {
@@ -24,7 +30,7 @@ export default function Register() {
         if (scannerElement) {
           scannerElement.click();
         }
-      }, 500); // 500ms 지연
+      }, 500);
 
       return () => clearTimeout(timer);
     }
@@ -42,20 +48,26 @@ export default function Register() {
       originalUrl: decodedText,
     }));
     setShowScanner(false);
-    alert("QR 코드 스캔 완료");
+    setIsSuccess(true);
+    setMessage("QR 코드 스캔이 완료되었습니다.");
+    setShowResultModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // 폼 데이터 검증
     if (!formData.originalUrl || !formData.description || !formData.address) {
-      alert("모든 필드를 입력해주세요.");
+      setIsSuccess(false);
+      setMessage("모든 필드를 입력해주세요.");
+      setShowResultModal(true);
+      setLoading(false);
       return;
     }
 
     try {
-      console.log("Sending data:", formData); // 디버깅용 로그
+      console.log("Sending data:", formData);
 
       const response = await fetch("/api/qr/register", {
         method: "POST",
@@ -69,10 +81,16 @@ export default function Register() {
         throw new Error("등록 실패");
       }
 
-      alert("QR 코드가 성공적으로 등록되었습니다.");
-      router.push("/");
+      const result = await response.json();
+      setIsSuccess(true);
+      setMessage("QR 코드가 성공적으로 등록되었습니다.");
+      setShowResultModal(true);
     } catch (error) {
-      alert("등록 실패: " + error.message);
+      setIsSuccess(false);
+      setMessage("등록 실패: " + error.message);
+      setShowResultModal(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +101,17 @@ export default function Register() {
       [name]: value,
     }));
   };
+
+  const handleResultModalClose = () => {
+    setShowResultModal(false);
+    if (isSuccess && !showScanner) {
+      router.push("/");
+    }
+  };
+
+  if (loading) {
+    return <LoadingSpinner message="QR 코드를 등록하는 중입니다..." />;
+  }
 
   return (
     <div className={styles.container}>
@@ -167,6 +196,14 @@ export default function Register() {
               </Link>
             </div>
           </form>
+        )}
+
+        {showResultModal && (
+          <ResultModal
+            isCompromised={!isSuccess}
+            onClose={handleResultModalClose}
+            type={isSuccess ? "register" : "error"}
+          />
         )}
       </main>
     </div>

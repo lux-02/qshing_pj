@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: none;
 }
 
 .spinner {
@@ -49,6 +50,10 @@
 
 .loadingText {
   margin-top: 1rem;
-  color: #a0a0a0;
+  color: #fff;
   font-size: 0.875rem;
+}
+
+.loadingSubtext {
+  color: #ffffff;
 }

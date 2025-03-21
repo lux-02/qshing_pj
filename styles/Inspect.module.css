@@ -1,52 +1,37 @@
 .container {
   min-height: 100vh;
-  padding: 1.5rem;
-  background-color: #1a1c21;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 2rem;
 }
 
 .main {
+  width: 100%;
   max-width: 800px;
-  margin: 0 auto;
-  padding: 0;
-  background-color: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  justify-content: center;
+  gap: 2rem;
 }
 
 .scannerContainer {
-  width: 80%;
-  background-color: #1a1c21;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  background-color: #242631;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .loadingMessage {
-  background-color: #242631;
-  padding: 1rem 1.5rem;
-  border-radius: 6px;
+  text-align: center;
   color: #ffffff;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  border: 1px solid #3a3d4c;
-}
-
-.loadingMessage p {
-  margin: 0;
+  font-size: 1.2rem;
+  margin: 1rem 0;
 }
 
 .resultContainer {
@@ -78,37 +63,26 @@
 }
 
 .buttonContainer {
+  width: 100%;
   display: flex;
   justify-content: center;
   gap: 1rem;
-
-  align-items: center;
-  flex-direction: column;
-  width: 80%;
 }
 
 .homeButton {
-  width: 100%;
-  padding: 0.75rem 0;
-  background-color: #3a3d4c;
-  color: #ffffff;
-  border: 1px solid #3a3d4c;
+  padding: 0.8rem 1.5rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
   border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: background-color 0.2s;
 }
 
 .homeButton:hover {
-  background-color: #3a3d4c;
-  border-color: #3a3d4c;
+  background-color: #357abd;
 }
 
 @media (max-width: 768px) {
