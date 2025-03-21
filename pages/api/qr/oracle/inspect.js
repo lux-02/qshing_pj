@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import QRScanner from "../app/components/QRScanner";
 import styles from "../styles/Inspect.module.css";
+import { getConnection } from "@/lib/oracle";
 
 export default function Inspect() {
   const router = useRouter();
@@ -28,32 +29,47 @@ export default function Inspect() {
     setInspecting(true);
 
     try {
-      const response = await fetch("/api/qr/inspect", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          qrId: router.query.qrId,
-          scannedUrl: decodedText,
-        }),
-      });
+      const connection = await getConnection();
+      const result = await connection.execute(
+        `SELECT ORIGINAL_URL FROM QR_CODES WHERE ID = :1`,
+        [router.query.qrId]
+      );
 
-      if (!response.ok) {
-        throw new Error("점검 실패");
+      if (result.rows.length === 0) {
+        throw new Error("QR 코드를 찾을 수 없습니다.");
       }
 
-      const result = await response.json();
+      const originalUrl = result.rows[0][0];
+      const scannedUrl = decodedText;
 
-      if (result.success) {
-        alert("점검이 완료되었습니다.");
-        router.replace("/");
-      } else {
-        throw new Error(result.message || "점검 실패");
-      }
+      // TODO: 실제 위변조 검사 로직 구현
+      const isCompromised = false;
+
+      // 점검 결과 업데이트
+      await connection.execute(
+        `UPDATE QR_CODES 
+         SET LAST_SCANNED_URL = :1, 
+             LAST_SCANNED_AT = SYSDATE, 
+             IS_COMPROMISED = :2 
+         WHERE ID = :3`,
+        [scannedUrl, isCompromised ? 1 : 0, router.query.qrId]
+      );
+
+      await connection.commit();
+
+      alert("점검이 완료되었습니다.");
+      router.replace("/");
     } catch (error) {
       alert("점검 실패: " + error.message);
       setInspecting(false);
+    } finally {
+      if (connection) {
+        try {
+          await connection.close();
+        } catch (error) {
+          console.error("Connection closing error:", error);
+        }
+      }
     }
   };
 

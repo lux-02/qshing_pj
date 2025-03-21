@@ -1,30 +1,54 @@
-import { getConnection } from "../../../app/lib/oracle";
+import { getConnection } from "@/lib/oracle";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "허용되지 않는 요청 방법입니다." });
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
-  try {
-    const { originalUrl, description, address } = req.body;
-    const connection = await getConnection();
+  const { originalUrl, description, address } = req.body;
 
+  if (!originalUrl || !description || !address) {
+    return res.status(400).json({
+      success: false,
+      message: "모든 필드를 입력해주세요.",
+    });
+  }
+
+  let connection;
+  try {
+    connection = await getConnection();
     const result = await connection.execute(
-      `INSERT INTO qr_codes (id, original_url, description, address)
-       VALUES (SYS_GUID(), :1, :2, :3)`,
-      [originalUrl, description, address],
-      { autoCommit: true }
+      `INSERT INTO QR_CODES (ID, ORIGINAL_URL, DESCRIPTION, ADDRESS, CREATED_AT)
+       VALUES (QR_CODES_SEQ.NEXTVAL, :1, :2, :3, SYSDATE)
+       RETURNING ID INTO :4`,
+      [
+        originalUrl,
+        description,
+        address,
+        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+      ]
     );
 
-    await connection.close();
+    await connection.commit();
 
-    res.status(200).json({
+    return res.status(201).json({
       success: true,
+      id: result.outBinds[0],
       message: "QR 코드가 등록되었습니다.",
-      id: result.rowsAffected[0],
     });
   } catch (error) {
-    console.error("Oracle registration error:", error);
-    res.status(500).json({ message: "등록 중 오류가 발생했습니다." });
+    console.error("QR 코드 등록 중 오류 발생:", error);
+    return res.status(500).json({
+      success: false,
+      message: "QR 코드 등록 중 오류가 발생했습니다.",
+    });
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("Connection closing error:", error);
+      }
+    }
   }
 }
