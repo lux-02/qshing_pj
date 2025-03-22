@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getQRList, inspectQR, deleteQR } from "../../services/qrService";
+import { getQRList, inspectQR, deleteQR } from "../../lib/oracle";
 
 const QRList = () => {
   const [qrList, setQRList] = useState([]);
