@@ -19,7 +19,7 @@
     "@tailwindcss/forms": "^0.5.7",
     "axios": "^1.6.7",
     "html5-qrcode": "^2.3.8",
-    "next": "^15.2.3",
+    "next": "12.3.4",
     "oci-common": "^2.106.0",
     "oci-objectstorage": "^2.106.0",
     "oci-secrets": "^2.106.0",
