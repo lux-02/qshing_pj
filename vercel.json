@@ -9,6 +9,5 @@
       "src": "Wallet_QSHING/**",
       "use": "@vercel/static"
     }
-  ],
-  "includeFiles": ["Wallet_QSHING/**"]
+  ]
 }
