@@ -1,3 +1,5 @@
+import axios from "axios";
+
 let oracledb;
 
 // 서버 사이드에서만 oracledb 모듈 로드
@@ -292,169 +294,161 @@ export async function createQRCode({ description, address, originalUrl }) {
   }
 }
 
-// QR 코드 목록 조회
-export async function listQRCodes() {
-  let connection;
+// Oracle REST API 설정
+const ORACLE_REST_API_URL = process.env.ORACLE_REST_API_URL;
+const ORACLE_OAUTH_CLIENT_ID = process.env.ORACLE_OAUTH_CLIENT_ID;
+const ORACLE_OAUTH_CLIENT_SECRET = process.env.ORACLE_OAUTH_CLIENT_SECRET;
+
+// OAuth 토큰을 가져오는 함수
+async function getAccessToken() {
   try {
-    connection = await getConnection();
+    console.log("OAuth 토큰 요청 시작");
+    console.log("Client ID:", ORACLE_OAUTH_CLIENT_ID);
+    console.log("API URL:", ORACLE_REST_API_URL);
 
-    const result = await connection.execute(
-      `SELECT 
-        ID, DESCRIPTION, ADDRESS, ORIGINAL_URL, 
-        LAST_SCANNED_URL, LAST_SCANNED_AT, IS_COMPROMISED,
-        CREATED_AT, UPDATED_AT
-      FROM QR_CODES 
-      ORDER BY CREATED_AT DESC`
-    );
-
-    return result.rows;
-  } catch (error) {
-    console.error("QR 코드 목록 조회 중 오류 발생:", error);
-    throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (error) {
-        console.error("연결 종료 중 오류 발생:", error);
-      }
-    }
-  }
-}
-
-// QR 코드 상세 조회
-export async function getQRCode(id) {
-  let connection;
-  try {
-    connection = await getConnection();
-
-    const result = await connection.execute(
-      `SELECT 
-        ID, DESCRIPTION, ADDRESS, ORIGINAL_URL, 
-        LAST_SCANNED_URL, LAST_SCANNED_AT, IS_COMPROMISED,
-        CREATED_AT, UPDATED_AT
-      FROM QR_CODES 
-      WHERE ID = :id`,
-      [id]
-    );
-
-    return result.rows[0];
-  } catch (error) {
-    console.error("QR 코드 조회 중 오류 발생:", error);
-    throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (error) {
-        console.error("연결 종료 중 오류 발생:", error);
-      }
-    }
-  }
-}
-
-// QR 코드 수정
-export async function updateQRCode(id, { description, address, originalUrl }) {
-  let connection;
-  try {
-    connection = await getConnection();
-
-    await connection.execute(
-      `UPDATE QR_CODES 
-      SET 
-        DESCRIPTION = :description,
-        ADDRESS = :address,
-        ORIGINAL_URL = :originalUrl
-      WHERE ID = :id`,
+    const response = await axios.post(
+      `${ORACLE_REST_API_URL}/oauth/token`,
+      "grant_type=client_credentials",
       {
-        id,
-        description,
-        address,
-        originalUrl,
-      },
-      { autoCommit: true }
-    );
-
-    // 수정된 QR 코드 정보 조회
-    const { rows } = await connection.execute(
-      `SELECT 
-        ID, DESCRIPTION, ADDRESS, ORIGINAL_URL, 
-        LAST_SCANNED_URL, LAST_SCANNED_AT, IS_COMPROMISED,
-        CREATED_AT, UPDATED_AT
-      FROM QR_CODES WHERE ID = :id`,
-      [id]
-    );
-
-    return rows[0];
-  } catch (error) {
-    console.error("QR 코드 수정 중 오류 발생:", error);
-    throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (error) {
-        console.error("연결 종료 중 오류 발생:", error);
+        auth: {
+          username: ORACLE_OAUTH_CLIENT_ID,
+          password: ORACLE_OAUTH_CLIENT_SECRET,
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
       }
-    }
+    );
+
+    console.log("OAuth 토큰 응답:", response.data);
+    return response.data.access_token;
+  } catch (error) {
+    console.error("OAuth 토큰 발급 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw new Error("인증 토큰을 가져오는데 실패했습니다.");
+  }
+}
+
+// 기본 axios 인스턴스 생성
+const api = axios.create({
+  baseURL: ORACLE_REST_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+// 요청 인터셉터 추가
+api.interceptors.request.use(async (config) => {
+  try {
+    console.log("API 요청 시작:", config.url);
+    const token = await getAccessToken();
+    config.headers.Authorization = `Bearer ${token}`;
+    console.log("인증 헤더 설정 완료");
+    return config;
+  } catch (error) {
+    console.error("인터셉터 오류:", error);
+    return Promise.reject(error);
+  }
+});
+
+// QR 코드 목록 조회
+export async function getQRList() {
+  try {
+    console.log("QR 목록 조회 시작");
+    const response = await api.get("/qr/list");
+    console.log("QR 목록 조회 성공:", response.data);
+    return response.data.items || [];
+  } catch (error) {
+    console.error("QR 목록 조회 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw new Error("QR 목록을 가져오는데 실패했습니다.");
+  }
+}
+
+// QR 코드 상세 정보 조회
+export async function getQRDetail(id) {
+  try {
+    console.log("QR 상세 정보 조회 시작:", id);
+    const response = await api.get(`/qr/detail/${id}`);
+    console.log("QR 상세 정보 조회 성공:", response.data);
+    return response.data.items?.[0] || null;
+  } catch (error) {
+    console.error("QR 상세 정보 조회 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw new Error("QR 상세 정보를 가져오는데 실패했습니다.");
+  }
+}
+
+// QR 코드 검사
+export async function inspectQR(id, scannedUrl) {
+  try {
+    console.log("QR 검사 시작:", { id, scannedUrl });
+    const response = await api.post("/qr/inspect", {
+      id,
+      scannedUrl,
+    });
+    console.log("QR 검사 성공:", response.data);
+    return response.data.items?.[0] || null;
+  } catch (error) {
+    console.error("QR 검사 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw new Error("QR 검사에 실패했습니다.");
+  }
+}
+
+// QR 코드 등록
+export async function registerQR(originalUrl, description = "", address = "") {
+  try {
+    console.log("QR 등록 시작:", { originalUrl, description, address });
+    const response = await api.post("/qr/register", {
+      originalUrl,
+      description,
+      address,
+    });
+    console.log("QR 등록 성공:", response.data);
+    return response.data.items?.[0] || null;
+  } catch (error) {
+    console.error("QR 등록 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw new Error("QR 등록에 실패했습니다.");
   }
 }
 
 // QR 코드 삭제
-export async function deleteQRCode(id) {
-  let connection;
+export async function deleteQR(id) {
   try {
-    connection = await getConnection();
-
-    await connection.execute("DELETE FROM QR_CODES WHERE ID = :id", [id], {
-      autoCommit: true,
+    console.log("QR 삭제 시작:", id);
+    const response = await api.delete(`/qr/delete/${id}`);
+    console.log("QR 삭제 성공:", response.data);
+    return response.data.items?.[0] || null;
+  } catch (error) {
+    console.error("QR 삭제 오류:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
     });
-
-    return true;
-  } catch (error) {
-    console.error("QR 코드 삭제 중 오류 발생:", error);
-    throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (error) {
-        console.error("연결 종료 중 오류 발생:", error);
-      }
-    }
-  }
-}
-
-// QR 코드 스캔 정보 업데이트
-export async function updateQRCodeScan(id, scannedUrl) {
-  let connection;
-  try {
-    connection = await getConnection();
-
-    await connection.execute(
-      `UPDATE QR_CODES 
-      SET 
-        LAST_SCANNED_URL = :scannedUrl,
-        LAST_SCANNED_AT = CURRENT_TIMESTAMP
-      WHERE ID = :id`,
-      {
-        id,
-        scannedUrl,
-      },
-      { autoCommit: true }
-    );
-
-    return true;
-  } catch (error) {
-    console.error("QR 코드 스캔 정보 업데이트 중 오류 발생:", error);
-    throw error;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (error) {
-        console.error("연결 종료 중 오류 발생:", error);
-      }
-    }
+    throw new Error("QR 삭제에 실패했습니다.");
   }
 }
