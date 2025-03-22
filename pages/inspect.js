@@ -14,38 +14,61 @@ export default function Inspect() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    console.log("현재 qrId:", qrId);
+    if (!qrId) {
+      setMessage("QR 코드 ID가 필요합니다.");
+      setShowResultModal(true);
+      setIsSuccess(false);
+    }
+  }, [qrId]);
+
   const handleScanSuccess = async (decodedText) => {
     if (!qrId) {
+      setMessage("QR 코드 ID가 필요합니다.");
+      setShowResultModal(true);
+      setIsSuccess(false);
       return;
     }
 
     setInspecting(true);
 
     try {
-      const response = await fetch(`/api/qr/oracle/inspect?id=${qrId}`, {
+      const requestUrl = `/api/qr/oracle/inspect`;
+      console.log("요청 URL:", requestUrl);
+      console.log("요청 본문:", { id: qrId, scannedUrl: decodedText });
+
+      const response = await fetch(requestUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          id: qrId,
           scannedUrl: decodedText,
         }),
       });
 
+      console.log("응답 상태:", response.status);
+
       if (!response.ok) {
-        throw new Error("점검 실패");
+        const errorText = await response.text();
+        console.error("에러 응답:", errorText);
+        throw new Error(`점검 실패 (${response.status}): ${errorText}`);
       }
 
-      const result = await response.json();
+      const responseData = await response.json();
+      console.log("응답 데이터:", responseData);
 
-      if (result.success) {
+      if (responseData.success) {
         setIsSuccess(true);
         setMessage("QR 코드 점검이 완료되었습니다.");
         setShowResultModal(true);
       } else {
-        throw new Error(result.message || "점검 실패");
+        throw new Error(responseData.message || "점검 실패");
       }
     } catch (error) {
+      console.error("점검 중 오류 발생:", error);
       setIsSuccess(false);
       setMessage("점검 실패: " + error.message);
       setShowResultModal(true);
@@ -56,7 +79,7 @@ export default function Inspect() {
 
   const handleResultModalClose = () => {
     setShowResultModal(false);
-    if (isSuccess) {
+    if (isSuccess || !qrId) {
       router.replace("/");
     }
   };

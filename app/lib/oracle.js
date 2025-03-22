@@ -1,13 +1,24 @@
 import axios from "axios";
 
 // Oracle REST API 설정
-const ORACLE_REST_API_URL = process.env.ORACLE_REST_API_URL;
-const ORACLE_OAUTH_CLIENT_ID = process.env.ORACLE_OAUTH_CLIENT_ID;
-const ORACLE_OAUTH_CLIENT_SECRET = process.env.ORACLE_OAUTH_CLIENT_SECRET;
+const ORACLE_REST_API_URL = process.env.NEXT_PUBLIC_ORACLE_REST_API_URL;
+const ORACLE_OAUTH_CLIENT_ID = process.env.NEXT_PUBLIC_ORACLE_OAUTH_CLIENT_ID;
+const ORACLE_OAUTH_CLIENT_SECRET =
+  process.env.NEXT_PUBLIC_ORACLE_OAUTH_CLIENT_SECRET;
 
 // OAuth 토큰을 가져오는 함수
 async function getAccessToken() {
   try {
+    if (
+      !ORACLE_REST_API_URL ||
+      !ORACLE_OAUTH_CLIENT_ID ||
+      !ORACLE_OAUTH_CLIENT_SECRET
+    ) {
+      throw new Error(
+        "Oracle API 설정이 누락되었습니다. 환경 변수를 확인해주세요."
+      );
+    }
+
     console.log("OAuth 토큰 요청 시작");
     console.log("Client ID:", ORACLE_OAUTH_CLIENT_ID);
     console.log("API URL:", ORACLE_REST_API_URL);
@@ -101,13 +112,32 @@ export async function getQRDetail(id) {
 // QR 코드 검사
 export async function inspectQR(id, scannedUrl) {
   try {
+    if (!id || !scannedUrl) {
+      throw new Error("QR 코드 ID와 스캔된 URL이 필요합니다.");
+    }
+
     console.log("QR 검사 시작:", { id, scannedUrl });
-    const response = await api.post("/qr/inspect", {
+    const response = await api.post(`/qr/inspect`, {
       id,
       scannedUrl,
     });
+
     console.log("QR 검사 성공:", response.data);
-    return response.data.items?.[0] || null;
+
+    // 응답이 없거나 빈 객체인 경우에도 성공으로 처리
+    if (!response.data || Object.keys(response.data).length === 0) {
+      return {
+        success: true,
+        message: "QR 코드 점검이 완료되었습니다.",
+        status: 200,
+      };
+    }
+
+    return {
+      success: response.data.success === 1,
+      message: response.data.message || "QR 코드 점검이 완료되었습니다.",
+      status: response.data.status || 200,
+    };
   } catch (error) {
     console.error("QR 검사 오류:", {
       status: error.response?.status,
@@ -115,7 +145,7 @@ export async function inspectQR(id, scannedUrl) {
       data: error.response?.data,
       message: error.message,
     });
-    throw new Error("QR 검사에 실패했습니다.");
+    throw new Error(error.response?.data?.message || "QR 검사에 실패했습니다.");
   }
 }
 
