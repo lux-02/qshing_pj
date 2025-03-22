@@ -5,14 +5,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "허용되지 않는 메서드입니다." });
   }
 
-  const { originalUrl } = req.body;
+  const { originalUrl, description = "", address = "" } = req.body;
 
   if (!originalUrl) {
     return res.status(400).json({ error: "원본 URL이 필요합니다." });
   }
 
   try {
-    const result = await registerQR(originalUrl);
+    const result = await registerQR(originalUrl, description, address);
     res.status(201).json(result);
   } catch (error) {
     console.error("QR 코드 등록 API 오류:", error);

@@ -159,7 +159,7 @@ export async function registerQR(originalUrl, description = "", address = "") {
       address,
     });
     console.log("QR 등록 성공:", response.data);
-    return response.data.items?.[0] || null;
+    return response.data;
   } catch (error) {
     console.error("QR 등록 오류:", {
       status: error.response?.status,

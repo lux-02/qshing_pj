@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import QRScanner from "../app/components/QRScanner";
+import QRScanner from "@/app/components/QRScanner";
 import LoadingSpinner from "../app/components/LoadingSpinner";
 import ResultModal from "../app/components/ResultModal";
 import styles from "../styles/Register.module.css";
 
 export default function Register() {
   const router = useRouter();
+  const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showMessage, setShowMessage] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  const [formData, setFormData] = useState({
-    originalUrl: "",
-    description: "",
-    address: "",
-  });
   const [pageLoaded, setPageLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [message, setMessage] = useState("");
 
   // QR 스캐너 자동 시작을 위한 useEffect
   useEffect(() => {
@@ -42,64 +42,46 @@ export default function Register() {
     return () => setPageLoaded(false);
   }, []);
 
-  const handleScanSuccess = (decodedText) => {
-    setFormData((prev) => ({
-      ...prev,
-      originalUrl: decodedText,
-    }));
-    setShowScanner(false);
-    setIsSuccess(true);
-    setMessage("QR 코드 스캔이 완료되었습니다.");
-    setShowResultModal(true);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // 폼 데이터 검증
-    if (!formData.originalUrl || !formData.description || !formData.address) {
-      setIsSuccess(false);
-      setMessage("모든 필드를 입력해주세요.");
-      setShowResultModal(true);
-      setLoading(false);
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
-      console.log("Sending data:", formData);
-
       const response = await fetch("/api/qr/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          originalUrl: url,
+          description: description || "",
+          address: address || "",
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("등록 실패");
+        throw new Error("QR 코드 등록에 실패했습니다.");
       }
 
-      const result = await response.json();
-      setIsSuccess(true);
+      const data = await response.json();
       setMessage("QR 코드가 성공적으로 등록되었습니다.");
-      setShowResultModal(true);
+      setShowMessage(true);
+      setUrl("");
+      setDescription("");
+      setAddress("");
+
+      // 등록 성공 시 메인 페이지로 리다이렉트
+      router.push("/");
     } catch (error) {
-      setIsSuccess(false);
-      setMessage("등록 실패: " + error.message);
-      setShowResultModal(true);
+      setMessage(error.message);
+      setShowMessage(true);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleScanSuccess = (decodedText) => {
+    setUrl(decodedText);
+    setShowScanner(false);
   };
 
   const handleResultModalClose = () => {
@@ -139,8 +121,8 @@ export default function Register() {
                   type="url"
                   id="originalUrl"
                   name="originalUrl"
-                  value={formData.originalUrl}
-                  onChange={handleChange}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
                   required
                   className={styles.input}
                   placeholder="https://example.com"
@@ -162,8 +144,8 @@ export default function Register() {
               <textarea
                 id="description"
                 name="description"
-                value={formData.description}
-                onChange={handleChange}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
                 className={styles.textarea}
                 placeholder="QR 코드에 대한 설명을 입력하세요"
@@ -178,8 +160,8 @@ export default function Register() {
                 type="text"
                 id="address"
                 name="address"
-                value={formData.address}
-                onChange={handleChange}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 required
                 className={styles.input}
                 placeholder="QR 코드가 설치된 위치"
@@ -187,15 +169,21 @@ export default function Register() {
             </div>
 
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.submitButton}>
-                등록
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={styles.submitButton}
+              >
+                {isSubmitting ? "등록 중..." : "등록"}
               </button>
-
-              <Link href="/" className={styles.homeButton}>
-                메인 페이지
-              </Link>
             </div>
           </form>
+        )}
+
+        {showMessage && (
+          <div className={styles.messageContainer}>
+            <p className={styles.message}>{message}</p>
+          </div>
         )}
 
         {showResultModal && (
