@@ -12,7 +12,6 @@
     "@azure/app-configuration": "^1.8.0",
     "@azure/identity": "^4.8.0",
     "@azure/keyvault-secrets": "^4.9.0",
-    "@chakra-ui/react": "^3.13.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^1.7.18",
