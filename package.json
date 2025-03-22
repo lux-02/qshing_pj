@@ -2,6 +2,9 @@
   "name": "qshing_pj",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,7 +26,7 @@
     "oci-common": "^2.106.0",
     "oci-objectstorage": "^2.106.0",
     "oci-secrets": "^2.106.0",
-    "oracledb": "5.5.0",
+    "oracledb": "6.3.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-qr-reader": "^3.0.0-beta-1",
