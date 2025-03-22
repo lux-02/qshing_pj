@@ -7,10 +7,13 @@
     },
     {
       "src": "Wallet_QSHING/**",
-      "use": "@vercel/static",
-      "config": {
-        "distDir": "/tmp/Wallet_QSHING"
-      }
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/Wallet_QSHING/(.*)",
+      "dest": "/Wallet_QSHING/$1"
     }
   ]
 }
