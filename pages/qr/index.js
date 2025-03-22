@@ -11,10 +11,18 @@ const QRList = () => {
       try {
         const data = await getQRList();
         console.log("받아온 QR 목록:", data);
-        setQRList(data);
+        if (Array.isArray(data)) {
+          setQRList(data);
+        } else if (data && data.items) {
+          setQRList(data.items);
+        } else {
+          console.error("예상치 못한 데이터 형식:", data);
+          setQRList([]);
+        }
       } catch (err) {
         console.error("QR 목록 조회 오류:", err);
         setError(err.message);
+        setQRList([]);
       } finally {
         setLoading(false);
       }
@@ -31,7 +39,11 @@ const QRList = () => {
       await inspectQR(id, scannedUrl);
       // 목록 새로고침
       const updatedData = await getQRList();
-      setQRList(updatedData);
+      if (Array.isArray(updatedData)) {
+        setQRList(updatedData);
+      } else if (updatedData && updatedData.items) {
+        setQRList(updatedData.items);
+      }
     } catch (err) {
       alert(err.message);
     }
@@ -44,7 +56,11 @@ const QRList = () => {
       await deleteQR(id);
       // 목록 새로고침
       const updatedData = await getQRList();
-      setQRList(updatedData);
+      if (Array.isArray(updatedData)) {
+        setQRList(updatedData);
+      } else if (updatedData && updatedData.items) {
+        setQRList(updatedData.items);
+      }
     } catch (err) {
       alert(err.message);
     }
@@ -53,6 +69,8 @@ const QRList = () => {
   if (loading) return <div className="text-center py-8">로딩 중...</div>;
   if (error)
     return <div className="text-center py-8 text-red-600">오류: {error}</div>;
+
+  console.log("현재 QR 목록 상태:", qrList);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -72,82 +90,87 @@ const QRList = () => {
             </tr>
           </thead>
           <tbody>
-            {qrList && qrList.length > 0 ? (
-              qrList.map((qr) => (
-                <tr key={qr.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border">
-                    <span
-                      className={`px-2 py-1 rounded ${
-                        qr.is_compromised === 1
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {qr.is_compromised === 1 ? "위험" : "안전"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 border">{qr.description || "-"}</td>
-                  <td className="px-4 py-2 border">{qr.address || "-"}</td>
-                  <td className="px-4 py-2 border">
-                    <a
-                      href={qr.original_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {qr.original_url}
-                    </a>
-                  </td>
-                  <td className="px-4 py-2 border">
-                    {qr.last_scanned_url ? (
+            {Array.isArray(qrList) && qrList.length > 0 ? (
+              qrList.map((qr) => {
+                console.log("QR 항목:", qr);
+                return (
+                  <tr key={qr.ID || qr.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border">
+                      <span
+                        className={`px-2 py-1 rounded ${
+                          qr.is_compromised === 1
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {qr.is_compromised === 1 ? "위험" : "안전"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {qr.description || "-"}
+                    </td>
+                    <td className="px-4 py-2 border">{qr.address || "-"}</td>
+                    <td className="px-4 py-2 border">
                       <a
-                        href={qr.last_scanned_url}
+                        href={qr.original_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
                       >
-                        {qr.last_scanned_url}
+                        {qr.original_url}
                       </a>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="px-4 py-2 border">
-                    {qr.last_scanned_at
-                      ? new Date(qr.last_scanned_at).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-2 border">
-                    {qr.last_scanned_at ? (
-                      <span className="text-gray-600">
-                        {Math.floor(
-                          (new Date() - new Date(qr.last_scanned_at)) /
-                            (1000 * 60 * 60)
-                        )}
-                        시간 전
-                      </span>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="px-4 py-2 border">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleInspect(qr.id)}
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        점검
-                      </button>
-                      <button
-                        onClick={() => handleDelete(qr.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {qr.last_scanned_url ? (
+                        <a
+                          href={qr.last_scanned_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {qr.last_scanned_url}
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {qr.last_scanned_at
+                        ? new Date(qr.last_scanned_at).toLocaleString()
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {qr.last_scanned_at ? (
+                        <span className="text-gray-600">
+                          {Math.floor(
+                            (new Date() - new Date(qr.last_scanned_at)) /
+                              (1000 * 60 * 60)
+                          )}
+                          시간 전
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleInspect(qr.id)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          점검
+                        </button>
+                        <button
+                          onClick={() => handleDelete(qr.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan="8" className="px-4 py-2 text-center">

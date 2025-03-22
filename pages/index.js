@@ -63,12 +63,12 @@ export default function Home() {
   const sortQRCodes = (qrCodes) => {
     return [...qrCodes].sort((a, b) => {
       // 미점검 상태를 최상위로
-      if (!a.LAST_SCANNED_AT && b.LAST_SCANNED_AT) return -1;
-      if (a.LAST_SCANNED_AT && !b.LAST_SCANNED_AT) return 1;
+      if (!a.last_scanned_at && b.last_scanned_at) return -1;
+      if (a.last_scanned_at && !b.last_scanned_at) return 1;
 
       // 둘 다 점검된 경우, 최근 점검일 기준으로 정렬
-      if (a.LAST_SCANNED_AT && b.LAST_SCANNED_AT) {
-        return new Date(b.LAST_SCANNED_AT) - new Date(a.LAST_SCANNED_AT);
+      if (a.last_scanned_at && b.last_scanned_at) {
+        return new Date(b.last_scanned_at) - new Date(a.last_scanned_at);
       }
 
       return 0;
@@ -83,9 +83,9 @@ export default function Home() {
         if (searchTerm) {
           const searchLower = searchTerm.toLowerCase();
           return (
-            (qr.DESCRIPTION?.toLowerCase() || "").includes(searchLower) ||
-            (qr.ADDRESS?.toLowerCase() || "").includes(searchLower) ||
-            (qr.ORIGINAL_URL?.toLowerCase() || "").includes(searchLower)
+            (qr.description?.toLowerCase() || "").includes(searchLower) ||
+            (qr.address?.toLowerCase() || "").includes(searchLower) ||
+            (qr.original_url?.toLowerCase() || "").includes(searchLower)
           );
         }
         return true;
@@ -94,11 +94,11 @@ export default function Home() {
         // 상태 필터링
         switch (filter) {
           case "compromised":
-            return qr.IS_COMPROMISED === 1;
+            return qr.is_compromised === 1;
           case "safe":
-            return qr.LAST_SCANNED_AT && qr.IS_COMPROMISED !== 1;
+            return qr.last_scanned_at && qr.is_compromised !== 1;
           case "unchecked":
-            return !qr.LAST_SCANNED_AT;
+            return !qr.last_scanned_at;
           default:
             return true;
         }
@@ -130,7 +130,7 @@ export default function Home() {
   const handleDelete = async (qrCode) => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/qr/delete?id=${qrCode.ID}`, {
+      const response = await fetch(`/api/qr/delete?id=${qrCode.id}`, {
         method: "DELETE",
       });
 
@@ -145,7 +145,7 @@ export default function Home() {
       setShowModal(false);
 
       // QR 코드 목록에서 삭제된 항목 제거
-      setQrCodes((prev) => prev.filter((item) => item.ID !== qrCode.ID));
+      setQrCodes((prev) => prev.filter((item) => item.id !== qrCode.id));
     } catch (error) {
       setIsSuccess(false);
       setMessage("삭제 실패: " + error.message);
@@ -233,31 +233,31 @@ export default function Home() {
               </thead>
               <tbody>
                 {filteredQRCodes.map((qr) => {
-                  const daysElapsed = calculateDaysElapsed(qr.LAST_SCANNED_AT);
-                  const isExpanded = expandedId === qr.ID;
+                  const daysElapsed = calculateDaysElapsed(qr.last_scanned_at);
+                  const isExpanded = expandedId === qr.id;
                   const rowClass = `${styles.tableRow} ${
                     isExpanded ? styles.expandedRow : ""
-                  } ${qr.LAST_SCANNED_AT ? styles.checkedRow : ""}`;
+                  } ${qr.last_scanned_at ? styles.checkedRow : ""}`;
 
                   return (
                     <tr
-                      key={qr.ID}
+                      key={qr.id}
                       className={rowClass}
-                      onClick={() => toggleRowExpand(qr.ID)}
+                      onClick={() => toggleRowExpand(qr.id)}
                     >
                       <td>
                         <span
                           className={`${styles.badge} ${
-                            qr.IS_COMPROMISED === 1
+                            qr.is_compromised === 1
                               ? styles.compromised
-                              : qr.LAST_SCANNED_AT
+                              : qr.last_scanned_at
                               ? styles.safe
                               : styles.unchecked
                           }`}
                         >
-                          {qr.IS_COMPROMISED === 1
+                          {qr.is_compromised === 1
                             ? "변조"
-                            : qr.LAST_SCANNED_AT
+                            : qr.last_scanned_at
                             ? "안전"
                             : "미점검"}
                         </span>
@@ -267,35 +267,35 @@ export default function Home() {
                           styles.descriptionCell
                         } ${isExpanded ? styles.expanded : styles.truncated}`}
                       >
-                        {qr.DESCRIPTION}
+                        {qr.description}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${
                           styles.addressCell
                         } ${isExpanded ? styles.expanded : styles.truncated}`}
                       >
-                        {qr.ADDRESS}
+                        {qr.address}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${styles.urlCell} ${
                           isExpanded ? styles.expanded : styles.truncated
                         }`}
                       >
-                        {qr.ORIGINAL_URL}
+                        {qr.original_url}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${styles.urlCell} ${
                           isExpanded ? styles.expanded : styles.truncated
                         }`}
                       >
-                        {qr.LAST_SCANNED_URL || "-"}
+                        {qr.last_scanned_url || "-"}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${
                           isExpanded ? styles.expanded : styles.truncated
                         }`}
                       >
-                        {formatDate(qr.LAST_SCANNED_AT)}
+                        {formatDate(qr.last_scanned_at)}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${
@@ -310,7 +310,7 @@ export default function Home() {
                             className={styles.inspectButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleInspect(qr.ID);
+                              handleInspect(qr.id);
                             }}
                           >
                             점검
