@@ -174,17 +174,24 @@ export async function registerQR(originalUrl, description = "", address = "") {
 // QR 코드 삭제
 export async function deleteQR(id) {
   try {
+    if (!id) {
+      throw new Error("QR 코드 ID가 필요합니다.");
+    }
+
     console.log("QR 삭제 시작:", id);
-    const response = await api.delete(`/qr/delete/${id}`);
-    console.log("QR 삭제 성공:", response.data);
-    return response.data.items?.[0] || null;
-  } catch (error) {
-    console.error("QR 삭제 오류:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message,
+    await api.delete(`/qr/delete/${id}`, {
+      data: { id },
     });
+    console.log("QR 삭제 성공");
+
+    // 삭제 요청이 성공하면 무조건 성공 응답 반환
+    return {
+      success: 1,
+      message: "QR 코드가 삭제되었습니다.",
+      status: 200,
+    };
+  } catch (error) {
+    console.error("QR 삭제 오류:", error);
     throw new Error("QR 삭제에 실패했습니다.");
   }
 }

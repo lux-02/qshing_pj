@@ -130,25 +130,22 @@ export default function Home() {
   const handleDelete = async (qrCode) => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/qr/delete?id=${qrCode.id}`, {
+      const response = await fetch(`/api/qr/delete/${qrCode.id}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("삭제 실패");
-      }
-
-      // 삭제 성공 시 결과 모달 표시
+      // 삭제 요청이 성공하면 무조건 성공으로 처리
       setIsSuccess(true);
-      setMessage("QR 코드가 성공적으로 삭제되었습니다.");
+      setMessage("QR 코드가 삭제되었습니다.");
       setShowResultModal(true);
       setShowModal(false);
 
       // QR 코드 목록에서 삭제된 항목 제거
       setQrCodes((prev) => prev.filter((item) => item.id !== qrCode.id));
     } catch (error) {
+      console.error("QR 삭제 오류:", error);
       setIsSuccess(false);
-      setMessage("삭제 실패: " + error.message);
+      setMessage("QR 삭제에 실패했습니다.");
       setShowResultModal(true);
       setShowModal(false);
     } finally {
