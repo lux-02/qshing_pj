@@ -96,16 +96,26 @@ export async function deleteQR(id) {
     }
 
     console.log("QR 삭제 시작:", id);
-    await api.delete(`/qr/delete/${id}`);
-    console.log("QR 삭제 성공");
+    const response = await api.delete(`/qr/delete/${id}`, {
+      data: { id: id }, // id를 요청 본문으로 전송
+    });
+    console.log("QR 삭제 응답:", response.data);
 
-    return {
-      success: 1,
-      message: "QR 코드가 삭제되었습니다.",
-      status: 200,
-    };
+    if (response.data && response.data.success === 1) {
+      return {
+        success: 1,
+        message: response.data.message || "QR 코드가 삭제되었습니다.",
+        status: response.data.status || 200,
+      };
+    } else {
+      throw new Error(response.data?.message || "QR 코드 삭제에 실패했습니다.");
+    }
   } catch (error) {
     console.error("QR 삭제 오류:", error);
+    if (error.response) {
+      console.error("서버 응답:", error.response.data);
+      throw new Error(error.response.data.message || "QR 삭제에 실패했습니다.");
+    }
     throw new Error("QR 삭제에 실패했습니다.");
   }
 }
