@@ -1,6 +1,12 @@
 import styles from "../../styles/Dashboard.module.css";
 
-const ResultModal = ({ isCompromised, onClose, type = "inspect", message }) => {
+const ResultModal = ({
+  isCompromised,
+  onClose,
+  type = "inspect",
+  message,
+  urlHausResult,
+}) => {
   const getMessage = () => {
     if (message) return message;
 
@@ -31,12 +37,35 @@ const ResultModal = ({ isCompromised, onClose, type = "inspect", message }) => {
     }
   };
 
+  const renderUrlHausResult = () => {
+    if (!urlHausResult) return null;
+
+    return (
+      <div className={styles.urlHausResult}>
+        <h3 className={styles.urlHausTitle}>URL 보안 검사 결과</h3>
+        {urlHausResult.isMalicious ? (
+          <div className={styles.maliciousWarning}>
+            <p className={styles.warningText}>⚠️ 악성 URL이 감지되었습니다!</p>
+            <p className={styles.threatType}>
+              위협 유형: {urlHausResult.threatType}
+            </p>
+          </div>
+        ) : (
+          <div className={styles.safeMessage}>
+            <p className={styles.successText}>✅ URL이 안전합니다.</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <h2 className={styles.modalTitle}>{getTitle()}</h2>
         <div className={styles.modalDetails}>
           <p className={styles.resultMessage}>{getMessage()}</p>
+          {renderUrlHausResult()}
         </div>
         <div className={styles.modalButtons}>
           <button className={styles.modalConfirmButton} onClick={onClose}>

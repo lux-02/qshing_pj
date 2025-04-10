@@ -640,3 +640,31 @@
 .modalConfirmButton:hover {
   background-color: #357abd;
 }
+
+.urlHausResult {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #242631;
+}
+
+.urlHausTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.maliciousWarning {
+  color: #ff4444;
+}
+
+.safeMessage {
+  color: #4caf50;
+}
+
+.threatType {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #ff6b6b;
+}

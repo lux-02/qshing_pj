@@ -120,26 +120,57 @@ export async function deleteQR(id) {
   }
 }
 
+// URL HAUS API를 사용하여 URL 검사
+async function checkUrlHaus(url) {
+  try {
+    console.log("URL HAUS 검사 시작:", url);
+    const response = await axios.get(`https://urlhaus-api.abuse.ch/v1/url/`, {
+      params: {
+        url: url,
+      },
+    });
+    console.log("URL HAUS 검사 결과:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("URL HAUS 검사 오류:", error);
+    return null;
+  }
+}
+
 // QR 코드 검사
 export async function inspectQR(id, scannedUrl) {
   try {
     console.log("QR 검사 시작:", { id, scannedUrl });
+
+    // URL HAUS 검사 수행
+    const urlHausResult = await checkUrlHaus(scannedUrl);
+    const isMalicious =
+      urlHausResult?.query_status === "ok" && urlHausResult?.threat !== "none";
+
+    // Oracle DB에 점검 결과 저장
     const response = await api.post("/qr/inspect", {
       id,
       scannedUrl,
+      isMalicious: isMalicious ? 1 : 0,
+      threatType: isMalicious ? urlHausResult.threat : null,
     });
+
     console.log("QR 검사 성공:", response.data);
-    return response.data;
+    return {
+      ...response.data,
+      urlHausResult: {
+        isMalicious,
+        threatType: urlHausResult?.threat,
+        details: urlHausResult,
+      },
+    };
   } catch (error) {
     console.error("QR 검사 오류:", error);
     if (error.response) {
-      // 서버에서 응답이 있는 경우
       throw new Error(error.response.data.message || "QR 검사에 실패했습니다.");
     } else if (error.request) {
-      // 요청은 보냈지만 응답이 없는 경우
       throw new Error("서버에 연결할 수 없습니다.");
     } else {
-      // 요청 설정 중 오류가 발생한 경우
       throw new Error("요청 중 오류가 발생했습니다.");
     }
   }
