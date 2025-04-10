@@ -277,19 +277,6 @@ export default function CheckURLResult() {
             </button>
           )}
         </div>
-
-        {result.virustotal_url && (
-          <div className={styles.resultFooter}>
-            <a
-              href={result.virustotal_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.detailLink}
-            >
-              VirusTotal에서 자세히 보기
-            </a>
-          </div>
-        )}
       </div>
     );
   };

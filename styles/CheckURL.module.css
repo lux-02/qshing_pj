@@ -546,7 +546,6 @@
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
-  align-self: center;
 }
 
 .detailButton:hover {

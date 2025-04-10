@@ -175,8 +175,6 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.main}>
-        <h1 className={styles.title}>Qshing Project</h1>
-
         <div className={styles.controls}>
           <input
             type="text"
@@ -195,9 +193,9 @@ export default function Home() {
             <option value="safe">안전</option>
             <option value="unchecked">미점검</option>
           </select>
-          <Link href="/register" className={styles.registerButton}>
-            QR 코드 등록
-          </Link>
+          <div className={styles.registerButton}>
+            <Link href="/register">QR 코드 등록</Link>
+          </div>
         </div>
 
         {error && (
@@ -285,7 +283,20 @@ export default function Home() {
                           isExpanded ? styles.expanded : styles.truncated
                         }`}
                       >
-                        {qr.last_scanned_url || "-"}
+                        {qr.last_scanned_url ? (
+                          <div className={styles.urlLink}>
+                            <Link
+                              href={`/CheckURL/${encodeURIComponent(
+                                qr.last_scanned_url
+                              )}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {qr.last_scanned_url}
+                            </Link>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td
                         className={`${styles.cellCommon} ${
