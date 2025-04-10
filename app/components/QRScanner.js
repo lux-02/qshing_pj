@@ -1,10 +1,11 @@
-import { useEffect, useRef, forwardRef } from "react";
+import { useEffect, useRef, forwardRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import styles from "../../styles/QRScanner.module.css";
 
 const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
   const scannerRef = useRef(null);
   const readerRef = useRef(null);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     // DOM이 마운트된 후에 스캐너 초기화
@@ -25,6 +26,7 @@ const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
             fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
+            rememberLastUsedCamera: true,
           },
           false
         );
@@ -35,12 +37,15 @@ const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
             // 스캔 성공 시 자동으로 스캐너 중지
             if (scannerRef.current) {
               scannerRef.current.clear();
+              setScanning(false);
             }
           },
           (errorMessage) => {
             // 에러는 무시
           }
         );
+
+        setScanning(true);
       }
     };
 
@@ -51,6 +56,7 @@ const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
       clearTimeout(timer);
       if (scannerRef.current) {
         scannerRef.current.clear();
+        setScanning(false);
       }
     };
   }, [onScanSuccess]);
@@ -61,6 +67,25 @@ const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
       stop: () => {
         if (scannerRef.current) {
           scannerRef.current.clear();
+          setScanning(false);
+        }
+      },
+      start: () => {
+        if (scannerRef.current && !scanning) {
+          scannerRef.current.render(
+            (decodedText) => {
+              onScanSuccess(decodedText);
+              // 스캔 성공 시 자동으로 스캐너 중지
+              if (scannerRef.current) {
+                scannerRef.current.clear();
+                setScanning(false);
+              }
+            },
+            (errorMessage) => {
+              // 에러는 무시
+            }
+          );
+          setScanning(true);
         }
       },
     };
@@ -72,24 +97,32 @@ const QRScanner = forwardRef(({ onScanSuccess }, ref) => {
       <button
         data-testid="qr-scanner-button"
         className={styles.scanButton}
+        data-scanning={scanning}
         onClick={() => {
           if (scannerRef.current) {
-            scannerRef.current.render(
-              (decodedText) => {
-                onScanSuccess(decodedText);
-                // 스캔 성공 시 자동으로 스캐너 중지
-                if (scannerRef.current) {
-                  scannerRef.current.clear();
+            if (scanning) {
+              scannerRef.current.clear();
+              setScanning(false);
+            } else {
+              scannerRef.current.render(
+                (decodedText) => {
+                  onScanSuccess(decodedText);
+                  // 스캔 성공 시 자동으로 스캐너 중지
+                  if (scannerRef.current) {
+                    scannerRef.current.clear();
+                    setScanning(false);
+                  }
+                },
+                (errorMessage) => {
+                  // 에러는 무시
                 }
-              },
-              (errorMessage) => {
-                // 에러는 무시
-              }
-            );
+              );
+              setScanning(true);
+            }
           }
         }}
       >
-        QR 코드 스캔
+        {scanning ? "스캔 중지" : "QR 코드 스캔"}
       </button>
     </div>
   );

@@ -1,0 +1,826 @@
+.container {
+  min-height: 100vh;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a1c21;
+  color: #ffffff;
+}
+
+.main {
+  padding: 3rem 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 900px;
+  width: 100%;
+}
+
+.searchContainer {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.searchForm {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #3a3d4c;
+  border-radius: 6px;
+  background-color: #1a1c21;
+  color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchInput::placeholder {
+  color: #8e8e8e;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.searchButton {
+  padding: 0.8rem 1.5rem;
+  font-size: 0.75rem;
+  background-color: #004ea7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.searchButton:hover {
+  background-color: #0051cc;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+/* 스캔 버튼 스타일 */
+.scanButton {
+  padding: 0.8rem 1.5rem;
+  font-size: 0.75rem;
+  background-color: #1a1c21;
+  color: #0070f3;
+  border: 1px solid #0070f3;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.scanButton:hover {
+  background-color: #0070f3;
+  color: white;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+/* 스캐너 컨테이너 스타일 */
+.scannerContainer {
+  background-color: #2a2c35;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* 스캔 취소 버튼 스타일 */
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: #ff4444;
+  border: 1px solid #ff4444;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  max-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.cancelButton:hover {
+  background-color: #ff4444;
+  color: white;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.title {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scanBox {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+  background-color: #2a2c35;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.urlInfoBox {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+  background-color: #2a2c35;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.urlTitle {
+  font-size: 1rem;
+  color: #8e8e8e;
+  margin: 0;
+  font-weight: 500;
+}
+
+.urlValue {
+  font-size: 1.2rem;
+  color: #ffffff;
+  word-break: break-all;
+  padding: 0.5rem 0;
+  font-weight: 500;
+}
+
+.newCheckButton {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #1a1c21;
+  color: #0070f3;
+  border: 1px solid #0070f3;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.newCheckButton:hover {
+  background-color: #0070f3;
+  color: white;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.input {
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #3a3d4c;
+  border-radius: 6px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #1a1c21;
+  color: #ffffff;
+}
+
+.input::placeholder {
+  color: #8e8e8e;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.checkButton {
+  padding: 0.8rem 1.5rem;
+  font-size: 0.75rem;
+  background-color: #004ea7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.checkButton:hover {
+  background-color: #0051cc;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.checkButton:disabled {
+  background-color: #4a4d57;
+  cursor: not-allowed;
+  color: #8a8d97;
+}
+
+.error {
+  width: 100%;
+  max-width: 700px;
+  padding: 1rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-left: 4px solid #ff4444;
+  border-radius: 4px;
+  color: #ff4444;
+  margin-bottom: 1.5rem;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  width: 100%;
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #0070f3;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: 1rem;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.resultContainer {
+  background-color: #2a2c35;
+  border-radius: 8px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  border: 1px solid #3a3d4c;
+}
+
+.resultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #3a3d4c;
+  background-color: #242631;
+}
+
+.resultTitle {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.apiLogo {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.statusBadge {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.completed {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.resultBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.threatIndicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.threatLabel {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  min-width: 100px;
+}
+
+.threatValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+}
+
+.safe {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.malicious {
+  background-color: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+}
+
+.unknown {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.threatTypeBox {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.threatTypeLabel {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  min-width: 100px;
+}
+
+.threatType {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.messageBox {
+  padding: 1rem;
+  background-color: #242631;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.message {
+  margin: 0;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+.tagsBox {
+  margin-top: 0.5rem;
+}
+
+.tagsTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #e0e0e0;
+  margin-bottom: 0.5rem;
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background-color: rgba(79, 70, 229, 0.15);
+  color: #8b83f8;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.statItem {
+  background-color: #242631;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.statCount {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.maliciousDetails {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 8px;
+}
+
+.detailsTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ff6b6b;
+  margin-bottom: 0.5rem;
+}
+
+.detailsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.detailItem {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+}
+
+.engineName {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.resultFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #3a3d4c;
+  background-color: #242631;
+  text-align: right;
+}
+
+.detailLink {
+  color: #0070f3;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.detailLink:hover {
+  text-decoration: underline;
+}
+
+/* 상세보기 버튼 스타일 */
+.detailButton {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  background-color: #1a1c21;
+  border: 1px solid #3a3d4c;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  align-self: center;
+}
+
+.detailButton:hover {
+  background-color: #242631;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 모달 스타일 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.modal {
+  background-color: #2a2c35;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.3s ease-out;
+  overflow: hidden;
+  border: 1px solid #3a3d4c;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #3a3d4c;
+  background-color: #242631;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #e0e0e0;
+  padding: 0.2rem 0.5rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: #ffffff;
+}
+
+.modalBody {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: #2a2c35;
+  overflow-x: hidden;
+  -ms-overflow-style: none; /* 인터넷 익스플로러 */
+  scrollbar-width: none; /* 파이어폭스 */
+}
+
+.modalTabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.categorySection {
+  background-color: #242631;
+  border-radius: 8px;
+  border: 1px solid #3a3d4c;
+  overflow: hidden;
+}
+
+.categoryTitle {
+  margin: 0;
+  padding: 1rem 1.5rem;
+  background-color: #1a1c21;
+  font-size: 1.1rem;
+  color: #ffffff;
+  border-bottom: 1px solid #3a3d4c;
+  font-weight: 600;
+}
+
+.resultsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resultsTable th {
+  background-color: #1a1c21;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  border-bottom: 1px solid #3a3d4c;
+}
+
+.resultsTable td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #3a3d4c;
+  color: #e0e0e0;
+}
+
+.resultsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.resultsTable tr:hover {
+  background-color: #242631;
+}
+
+.engineCell {
+  font-weight: 500;
+  color: #ffffff;
+  min-width: 150px;
+}
+
+.resultCell {
+  color: #e0e0e0;
+}
+
+.methodCell {
+  color: #8e8e8e;
+  font-size: 0.85rem;
+}
+
+.noResults {
+  padding: 1.5rem;
+  text-align: center;
+  color: #8e8e8e;
+  font-style: italic;
+}
+
+.modalFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #3a3d4c;
+  background-color: #242631;
+  text-align: right;
+}
+
+.closeModalButton {
+  padding: 0.6rem 1.2rem;
+  background-color: #1a1c21;
+  border: 1px solid #3a3d4c;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeModalButton:hover {
+  background-color: #242631;
+}
+
+/* 반응형 스타일 */
+@media (min-width: 768px) {
+  .scanBox {
+    flex-direction: row;
+  }
+
+  .input {
+    flex: 1;
+  }
+
+  .checkButton {
+    min-width: 120px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .modal {
+    width: 80%;
+  }
+}
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 768px) {
+  .searchForm {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .searchButton,
+  .scanButton {
+    width: 100%;
+  }
+
+  .scannerContainer {
+    padding: 1rem;
+  }
+
+  .cancelButton {
+    max-width: 100%;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.scanButton {
+  background-color: #002e78;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.scanButton:hover {
+  background-color: #3a67a8;
+}
+
+.scannerContainer {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.cancelButton {
+  margin-top: 15px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+}
+
+.cancelButton:hover {
+  background-color: #d32f2f;
+}
