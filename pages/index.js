@@ -185,7 +185,10 @@ export default function Home() {
           />
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setSearchTerm("");
+            }}
             className={styles.filterSelect}
           >
             <option value="all">전체</option>
